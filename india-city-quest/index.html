@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>India City Quest 🇮🇳</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0d0d0d, #1a0a00, #0d0d0d);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      padding: 20px;
+    }
+
+    /* ── Decorative top band ── */
+    .india-band {
+      width: 100%;
+      max-width: 720px;
+      height: 6px;
+      background: linear-gradient(90deg, #FF9933 33.3%, #ffffff 33.3% 66.6%, #138808 66.6%);
+      border-radius: 99px;
+      margin-bottom: 22px;
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+    .header h1 {
+      font-size: 2.5rem;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, #FF9933, #ffffff, #138808);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .header p { color: #aaa; margin-top: 6px; font-size: 0.92rem; }
+
+    /* ── Stats ── */
+    .stats {
+      display: flex;
+      gap: 18px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .stat-box {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 10px 20px;
+      text-align: center;
+      min-width: 88px;
+    }
+    .stat-box .label { font-size: 0.68rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+    .stat-box .value { font-size: 1.45rem; font-weight: 700; color: #FF9933; }
+
+    /* ── Card ── */
+    .card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 22px;
+      padding: 30px;
+      width: 100%;
+      max-width: 700px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    }
+
+    /* ── Progress ── */
+    .progress-wrap { margin-bottom: 20px; }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: #aaa;
+      margin-bottom: 6px;
+    }
+    .progress-bar {
+      height: 6px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #FF9933, #ffcc66);
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+
+    /* ── State / Region badge ── */
+    .badge {
+      display: inline-block;
+      background: rgba(255,153,51,0.12);
+      border: 1px solid rgba(255,153,51,0.35);
+      color: #FF9933;
+      font-size: 0.72rem;
+      padding: 3px 12px;
+      border-radius: 99px;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ── Clue section ── */
+    .clue-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .clue-title {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #FF9933;
+      font-weight: 600;
+    }
+    .clue-counter { font-size: 0.74rem; color: #aaa; }
+
+    .clues-list { list-style: none; margin-bottom: 16px; }
+    .clues-list li {
+      background: rgba(255,255,255,0.04);
+      border-left: 3px solid #FF9933;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      font-size: 0.97rem;
+      line-height: 1.55;
+      animation: fadeIn 0.4s ease;
+    }
+    .clues-list li.locked {
+      border-left-color: rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.22);
+      font-style: italic;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Hint button ── */
+    .hint-btn {
+      background: transparent;
+      border: 1px solid rgba(255,153,51,0.45);
+      color: #FF9933;
+      padding: 7px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      transition: background 0.2s;
+      margin-bottom: 18px;
+    }
+    .hint-btn:hover:not(:disabled) { background: rgba(255,153,51,0.12); }
+    .hint-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    /* ── Input row ── */
+    .input-row { display: flex; gap: 10px; }
+    #answerInput {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.07);
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+      transition: border 0.2s;
+    }
+    #answerInput::placeholder { color: rgba(255,255,255,0.3); }
+    #answerInput:focus { border-color: #FF9933; }
+
+    .submit-btn {
+      padding: 12px 22px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #FF9933, #ffcc44);
+      color: #1a0a00;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .submit-btn:hover { transform: scale(1.04); }
+    .submit-btn:active { transform: scale(0.97); }
+
+    /* ── Feedback ── */
+    .feedback {
+      margin-top: 14px;
+      min-height: 26px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      text-align: center;
+    }
+    .feedback.correct { color: #4ade80; }
+    .feedback.wrong   { color: #f87171; }
+    .feedback.reveal  { color: #facc15; }
+    .feedback.hint    { color: #94a3b8; }
+
+    /* ── Lives ── */
+    .lives { font-size: 1.35rem; letter-spacing: 4px; }
+
+    /* ── Overlays ── */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.82);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+    }
+    .overlay.active { display: flex; }
+
+    .overlay-box {
+      background: linear-gradient(135deg, #1a0a00, #2a1000);
+      border: 1px solid rgba(255,153,51,0.25);
+      border-radius: 24px;
+      padding: 46px 38px;
+      text-align: center;
+      max-width: 420px;
+      width: 90%;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.65);
+      animation: popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+    }
+    @keyframes popIn {
+      from { transform: scale(0.7); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .overlay-box h2 { font-size: 1.9rem; margin-bottom: 10px; }
+    .overlay-box p  { color: #bbb; margin-bottom: 22px; line-height: 1.65; font-size: 0.93rem; }
+    .big-score {
+      font-size: 3.4rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #FF9933, #ffcc44);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .play-btn {
+      padding: 13px 34px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #FF9933, #ffcc44);
+      color: #1a0a00;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .play-btn:hover { transform: scale(1.05); }
+
+    /* ── Rank badge on end screen ── */
+    .rank-badge {
+      font-size: 3rem;
+      margin-bottom: 6px;
+    }
+
+    /* ── Auth overlay ── */
+    .auth-tabs { display: flex; gap: 0; margin-bottom: 24px; border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,153,51,0.3); }
+    .auth-tab {
+      flex: 1; padding: 9px; background: transparent; border: none;
+      color: #aaa; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;
+    }
+    .auth-tab.active { background: rgba(255,153,51,0.2); color: #FF9933; font-weight: 600; }
+
+    .auth-input {
+      width: 100%; padding: 11px 14px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.07);
+      color: #fff; font-size: 0.95rem; outline: none; margin-bottom: 12px;
+      transition: border 0.2s;
+    }
+    .auth-input:focus { border-color: #FF9933; }
+    .auth-input::placeholder { color: rgba(255,255,255,0.3); }
+    .auth-error { color: #f87171; font-size: 0.83rem; min-height: 20px; margin-bottom: 10px; text-align: center; }
+
+    /* ── Nav bar ── */
+    .nav-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      width: 100%; max-width: 700px; margin-bottom: 6px;
+    }
+    .nav-user { font-size: 0.85rem; color: #aaa; }
+    .nav-user span { color: #FF9933; font-weight: 600; }
+    .logout-btn {
+      background: transparent; border: 1px solid rgba(255,153,51,0.35);
+      color: #FF9933; padding: 5px 14px; border-radius: 8px;
+      font-size: 0.8rem; cursor: pointer; transition: background 0.2s;
+    }
+    .logout-btn:hover { background: rgba(255,153,51,0.12); }
+
+    /* ── Score history ── */
+    .history-wrap { margin-top: 20px; text-align: left; }
+    .history-title {
+      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;
+      color: #FF9933; margin-bottom: 10px;
+    }
+    .history-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .history-table th { color: #888; font-weight: 500; padding: 4px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .history-table td { padding: 6px 6px; color: #ccc; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .history-table td:first-child { color: #FF9933; font-weight: 600; }
+    .badge-completed { color: #4ade80; font-size: 0.75rem; }
+    .badge-game-over { color: #f87171; font-size: 0.75rem; }
+
+    @media (max-width: 480px) {
+      .header h1 { font-size: 1.7rem; }
+      .card { padding: 20px 16px; }
+      .input-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Auth Screen -->
+  <div class="overlay active" id="authScreen">
+    <div class="overlay-box">
+      <div style="font-size:2.6rem;margin-bottom:8px">🇮🇳</div>
+      <h2 style="margin-bottom:18px">India City Quest</h2>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin"  onclick="switchTab('login')">Login</button>
+        <button class="auth-tab"        id="tabSignup" onclick="switchTab('signup')">Sign Up</button>
+      </div>
+
+      <input class="auth-input" id="authUsername" type="text"     placeholder="Username" autocomplete="off" />
+      <input class="auth-input" id="authPassword" type="password" placeholder="Password" />
+      <div class="auth-error" id="authError"></div>
+
+      <button class="play-btn" style="width:100%" onclick="submitAuth()">Continue →</button>
+    </div>
+  </div>
+
+  <!-- Welcome -->
+  <div class="overlay" id="welcomeScreen">
+    <div class="overlay-box">
+      <div style="font-size:2.8rem;margin-bottom:8px">🇮🇳</div>
+      <h2>India City Quest</h2>
+      <p>
+        Each round gives you clues about a famous Indian city — <strong>without naming it</strong>.<br><br>
+        Unlock clues one by one. The earlier you guess, the more points you earn!<br><br>
+        ❤️ You get <strong>3 lives per city</strong>. Can you name them all?
+      </p>
+      <button class="play-btn" onclick="startGame()">Start Playing 🗺️</button>
+    </div>
+  </div>
+
+  <!-- Game Over Screen -->
+  <div class="overlay" id="gameOverScreen">
+    <div class="overlay-box">
+      <div style="font-size:3rem;margin-bottom:8px">💀</div>
+      <h2 style="color:#f87171;">Game Over!</h2>
+      <p id="gameOverMsg">You ran out of lives.</p>
+      <div class="big-score" id="gameOverScore">0</div>
+      <p style="color:#aaa;margin-bottom:24px;font-size:0.88rem;">points scored before game ended</p>
+      <div id="gameOverHistory"></div>
+      <button class="play-btn" onclick="restartGame()">Play Again 🔁</button>
+    </div>
+  </div>
+
+  <!-- End Screen -->
+  <div class="overlay" id="endScreen">
+    <div class="overlay-box">
+      <div class="rank-badge" id="rankEmoji">🏆</div>
+      <h2 id="endTitle">Quiz Complete!</h2>
+      <div class="big-score" id="finalScore">0</div>
+      <p id="endMessage"></p>
+      <div id="endHistory"></div>
+      <button class="play-btn" onclick="restartGame()">Play Again 🔁</button>
+    </div>
+  </div>
+
+  <!-- India tricolor band -->
+  <div class="india-band"></div>
+
+  <!-- Nav bar -->
+  <div class="nav-bar">
+    <div class="nav-user">Playing as <span id="navUsername">—</span></div>
+    <button class="logout-btn" onclick="doLogout()">Logout</button>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <h1>🇮🇳 India City Quest</h1>
+    <p>Read the clues. Name the city.</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-box">
+      <div class="label">Score</div>
+      <div class="value" id="scoreDisplay">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="label">Lives</div>
+      <div class="value lives" id="livesDisplay">❤️❤️❤️</div>
+    </div>
+    <div class="stat-box">
+      <div class="label">City</div>
+      <div class="value" id="qNumDisplay">1 / 20</div>
+    </div>
+  </div>
+
+  <!-- Game Card -->
+  <div class="card">
+
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>Progress</span>
+        <span id="progressLabel">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="clue-header">
+      <span class="clue-title">🔍 Clues</span>
+      <span class="clue-counter" id="clueCounter">Clue 1 of 4</span>
+    </div>
+
+    <ul class="clues-list" id="cluesList"></ul>
+
+    <button class="hint-btn" id="hintBtn" onclick="revealNextClue()">
+      💡 Reveal Next Clue (−10 pts)
+    </button>
+
+    <div class="input-row">
+      <input
+        type="text"
+        id="answerInput"
+        placeholder="Type the city name…"
+        autocomplete="off"
+        onkeydown="if(event.key==='Enter') checkAnswer()"
+      />
+      <button class="submit-btn" onclick="checkAnswer()">Guess →</button>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+
+  </div>
+
+  <script>
+    // ─────────────────────────────────────────────
+    // DATA — 20 famous Indian cities
+    // ─────────────────────────────────────────────
+    const cities = [
+      {
+        name: "Mumbai",
+        aliases: ["mumbai", "bombay"],
+        category: "Maharashtra",
+        clues: [
+          "This city handles over 70% of India's international cargo trade and is home to the country's largest stock exchange.",
+          "It is built on what was originally a cluster of seven islands that were gradually joined together by land reclamation projects during British colonial rule.",
+          "The city's film industry produces more movies annually than any other in the world, and its studios are spread across a suburb whose name has become synonymous with Indian cinema.",
+          "A grand stone arch facing the Arabian Sea was built here in 1924 to commemorate the visit of King George V — it later became the symbolic gateway from which the last British troops departed India in 1948."
+        ]
+      },
+      {
+        name: "Delhi",
+        aliases: ["delhi", "new delhi"],
+        category: "NCT of Delhi",
+        clues: [
+          "This city has served as the capital of at least eight major empires and kingdoms throughout history, earning the nickname 'City of Cities'.",
+          "It is home to more UNESCO World Heritage Sites within its boundaries than any other Indian city.",
+          "A 73-metre-tall medieval minaret built in the 12th century stands here — it is the tallest brick minaret in the world.",
+          "The capital of modern India since 1911, it is divided into a planned colonial zone laid out by Edwin Lutyens and a densely packed medieval quarter known as the old city."
+        ]
+      },
+      {
+        name: "Kolkata",
+        aliases: ["kolkata", "calcutta"],
+        category: "West Bengal",
+        clues: [
+          "This city was the capital of British India for over 130 years and once rivalled London as the second most important city in the British Empire.",
+          "It is the only city in India that still operates hand-pulled rickshaws, a practice that has survived since the 19th century.",
+          "The city hosts the world's largest annual outdoor religious gathering dedicated to a goddess — a 10-day festival that culminates in massive clay idols being immersed in the river.",
+          "A 705-metre cantilever bridge over the Hooghly river — built without a single nut or bolt — serves as the city's most iconic landmark and carries over 150,000 vehicles daily."
+        ]
+      },
+      {
+        name: "Chennai",
+        aliases: ["chennai", "madras"],
+        category: "Tamil Nadu",
+        clues: [
+          "This coastal city is home to the world's second-longest urban beach, stretching over 13 kilometres along the Bay of Bengal.",
+          "It is considered the cultural capital of South India and serves as the nerve centre of Carnatic classical music and Bharatanatyam dance.",
+          "The city hosts the largest automotive manufacturing cluster in India, producing nearly a third of the country's cars — earning it the nickname 'Detroit of India'.",
+          "A British trading post established here in 1639 — Fort St. George — was the first major British fortification built on Indian soil, and the city grew outwards from it."
+        ]
+      },
+      {
+        name: "Bengaluru",
+        aliases: ["bengaluru", "bangalore"],
+        category: "Karnataka",
+        clues: [
+          "Sitting on the Deccan Plateau at an elevation of nearly 900 metres, this city enjoys some of the most temperate weather of any major Indian metropolis, with no extreme summer heat.",
+          "It is home to India's space agency, its defence research organisation, and the country's first public sector aerospace company — all headquartered here.",
+          "Over 2,000 startups are incorporated in this city every year; it produces more software engineers annually than any other city in the world.",
+          "Its name in the local language translates to 'Town of Boiled Beans,' reportedly originating from a story of an old woman who offered a lost king cooked beans as food."
+        ]
+      },
+      {
+        name: "Hyderabad",
+        aliases: ["hyderabad"],
+        category: "Telangana",
+        clues: [
+          "This city was the seat of the Nizam dynasty — the wealthiest royal family in the world at the time — and is historically renowned for its trade in pearls, diamonds, and fine cloth.",
+          "A 16th-century monument with four grand arches and four minarets stands at its historic centre, built to mark the end of a deadly plague that had swept through the region.",
+          "The city's signature slow-cooked layered rice dish, developed in royal kitchens centuries ago, is now regarded as the gold standard of its kind across India.",
+          "Today it operates a dual economy — one half rooted in centuries-old bazaars selling bangles and spices, the other anchored by a technology corridor that houses global giants like Microsoft and Google."
+        ]
+      },
+      {
+        name: "Jaipur",
+        aliases: ["jaipur"],
+        category: "Rajasthan",
+        clues: [
+          "Founded in 1727 by Maharaja Jai Singh II, this city was designed on a grid plan inspired by ancient Hindu architectural treatises — one of India's earliest planned cities.",
+          "Its entire old city was painted in a distinctive terracotta rose-pink colour in 1876 to welcome the Prince of Wales, and the tradition has been maintained ever since.",
+          "A five-storey palace facade with 953 small windows — designed so royal ladies could watch street processions without being seen — is the city's most photographed structure.",
+          "Located in the desert state of Rajasthan, it forms one vertex of India's famous tourist 'Golden Triangle,' along with the capital city and the city of the Taj Mahal."
+        ]
+      },
+      {
+        name: "Varanasi",
+        aliases: ["varanasi", "banaras", "benares", "kashi"],
+        category: "Uttar Pradesh",
+        clues: [
+          "Believed to have been continuously inhabited for over 5,000 years, it is considered one of the oldest living cities on Earth and a site of pilgrimage for hundreds of millions.",
+          "Over 80 stepped embankments line its riverfront, each serving as a ritual bathing site, cremation ground, or ceremonial space used in elaborate evening fire rituals every night of the year.",
+          "The city is a renowned centre for the production of fine silk brocade weaving — its handloom textiles earned a Geographical Indication tag and are woven on traditional pit looms passed down through generations.",
+          "Situated on the western bank of the Ganges in Uttar Pradesh, it is sacred to Hindus, Buddhists, and Jains alike — the Buddha is said to have delivered his first sermon just 10 km from here."
+        ]
+      },
+      {
+        name: "Amritsar",
+        aliases: ["amritsar"],
+        category: "Punjab",
+        clues: [
+          "This city's name translates to 'Pool of the Nectar of Immortality,' referring to the sacred man-made lake at the heart of the holiest site in the Sikh religion.",
+          "The community kitchen attached to its holiest shrine serves free meals to over 100,000 people every single day, regardless of religion, caste, or status — one of the largest free kitchens in the world.",
+          "In 1919, this city was the site of one of the most tragic events of colonial India, when British troops fired on a peaceful crowd gathered in an enclosed garden, killing hundreds.",
+          "Located in Punjab near the Pakistan border, it hosts a daily border closing ceremony at the Wagah crossing — attended by thousands of spectators from both nations — that has become a major tourist attraction."
+        ]
+      },
+      {
+        name: "Goa",
+        aliases: ["goa", "panaji", "panjim"],
+        category: "Goa",
+        clues: [
+          "This place was a Portuguese colony for 451 years — far longer than most other European colonies in India — and was only integrated into India in 1961.",
+          "Its old quarter is a UNESCO World Heritage Site, featuring 16th and 17th-century Baroque churches, including one that holds the preserved body of a Catholic saint enshrined for centuries.",
+          "With the highest per-capita income of any Indian state and the lowest poverty rate, it is the most prosperous region in the country.",
+          "Famous worldwide for its palm-fringed beaches, seafood cuisine, and a laid-back carnival culture heavily influenced by Latin European traditions, it attracts more international tourists per square kilometre than anywhere else in India."
+        ]
+      },
+      {
+        name: "Pune",
+        aliases: ["pune", "poona"],
+        category: "Maharashtra",
+        clues: [
+          "This city served as the seat of the Peshwa rulers — the prime ministers of the Maratha Empire — and was once the political centre of one of the most powerful empires in 18th-century India.",
+          "Its high concentration of universities, research institutes, and engineering colleges has earned it the nickname 'Oxford of the East.'",
+          "A German philosopher set up a controversial spiritual commune on the outskirts of this city in the 1970s, attracting thousands of Western followers and sparking global attention and controversy.",
+          "Located 150 km from India's financial capital and connected by one of the country's most traversed expressways, it has grown into a major IT and automotive manufacturing hub in its own right."
+        ]
+      },
+      {
+        name: "Mysuru",
+        aliases: ["mysuru", "mysore"],
+        category: "Karnataka",
+        clues: [
+          "This city produces nearly 80% of India's natural incense sticks and is one of the world's largest producers of sandalwood oil and agarbatti.",
+          "Its 10-day royal festival in October — celebrating the victory of good over evil — draws over a million visitors and features a golden howdah procession of decorated elephants through illuminated streets.",
+          "A magnificent four-towered palace at the centre of the city, rebuilt in 1912 after the original burned down, is illuminated by nearly 100,000 light bulbs every Sunday evening.",
+          "Often called the 'City of Palaces,' it was the seat of the Wadiyar dynasty in Karnataka and is rated consistently as one of India's cleanest cities."
+        ]
+      },
+      {
+        name: "Ahmedabad",
+        aliases: ["ahmedabad", "amdavad"],
+        category: "Gujarat",
+        clues: [
+          "Founded in 1411 by Sultan Ahmad Shah, this city was the commercial capital of the Mughal Empire and a global centre of cotton textile trade for centuries.",
+          "A simple riverside ashram on the banks of the Sabarmati river here was the home base of India's independence movement leader, who launched the famous 388-km salt march from this very site in 1930.",
+          "It became the first Indian city and the first city in Asia to be awarded UNESCO World Heritage City status, in 2017, for its exceptional medieval urban fabric.",
+          "Located in Gujarat, it is now a hub for pharmaceuticals, chemicals, and fashion, and hosts one of India's largest kite festivals every January 14th, when the sky is filled with tens of thousands of kites."
+        ]
+      },
+      {
+        name: "Kochi",
+        aliases: ["kochi", "cochin"],
+        category: "Kerala",
+        clues: [
+          "For over 600 years, massive Chinese-style cantilevered fishing nets have stood fixed along this city's waterfront — introduced by traders from the court of Kublai Khan — and are still operated by hand today.",
+          "The Jewish quarter here, established in the 16th century, contains one of the oldest synagogues in the Commonwealth, its floor paved with hand-painted Chinese blue-and-white tiles, each uniquely different.",
+          "This natural harbour city was where Vasco da Gama arrived in 1498, making it the first Indian port to receive a direct European sea route — a moment that reshaped world trade.",
+          "Located at the southern tip of India in Kerala, it is the gateway to the famous backwaters — a network of lagoons, lakes, and canals that stretch along the coast and are navigated by traditional rice barges."
+        ]
+      },
+      {
+        name: "Chandigarh",
+        aliases: ["chandigarh"],
+        category: "Punjab/Haryana",
+        clues: [
+          "This city was designed entirely from scratch after India's independence by the Swiss-French architect Le Corbusier — one of the most ambitious urban planning projects of the 20th century.",
+          "Unusually for India, it has no visible electricity wires or overhead cables above ground throughout the city, as all utilities were buried underground by design.",
+          "It simultaneously serves as the capital of two separate Indian states — a constitutional arrangement that has lasted since 1966.",
+          "Its most visited attraction is a garden built by a former government worker who secretly constructed elaborate mosaic sculptures, towers, and tunnels over 18 years using industrial waste — now known as the Rock Garden."
+        ]
+      },
+      {
+        name: "Lucknow",
+        aliases: ["lucknow"],
+        category: "Uttar Pradesh",
+        clues: [
+          "This city was the seat of the Nawabs of Awadh and became renowned in the 18th and 19th centuries for its extraordinarily refined culture of poetry, music, dance, and elaborate etiquette.",
+          "A style of delicate hand-embroidery using white thread on white fabric — historically produced here by artisans — is exported worldwide and has been awarded Geographical Indication status.",
+          "The city is celebrated for a style of cooking that slow-cooks meat in a sealed pot over gentle heat for hours — a technique said to have been invented in its royal kitchens.",
+          "Capital of India's most populous state, it is known colloquially as the 'City of Nawabs' and is famous for its tehzeeb — a distinctive culture of elaborate courtesy and graceful manners."
+        ]
+      },
+      {
+        name: "Jodhpur",
+        aliases: ["jodhpur"],
+        category: "Rajasthan",
+        clues: [
+          "A massive hilltop fortress with 10-metre-thick walls rising 122 metres above this city contains seven gates, each built to commemorate a military victory over an enemy army.",
+          "The old city below the fort is painted almost entirely in a vivid shade of indigo-blue, originally used by the Brahmin community to distinguish their homes, but now adopted city-wide.",
+          "This city lends its name to a style of riding breeches — flared at the hips and tight below the knee — invented here for Indian polo players in the 19th century and still used in equestrian sport worldwide.",
+          "Located in the Thar Desert of Rajasthan, it is called the 'Sun City' for its sunny weather and 'Blue City' for the colour of its old quarter — and is the second-largest city in the state."
+        ]
+      },
+      {
+        name: "Udaipur",
+        aliases: ["udaipur"],
+        category: "Rajasthan",
+        clues: [
+          "Built around a series of interconnected artificial lakes constructed in the 16th century for water conservation, this city is unlike any other in the Thar Desert region.",
+          "A sprawling palace rising directly from the waters of the main lake was used as a filming location for a James Bond film in 1983 and is now one of Asia's most celebrated luxury hotels.",
+          "This city was founded in 1559 by Maharana Udai Singh II after the previous Rajput capital was repeatedly sacked by the Mughal emperor Akbar.",
+          "Known as the 'City of Lakes' and 'Venice of the East,' it is located in southern Rajasthan and consistently ranks among the most romantic and picturesque cities in Asia."
+        ]
+      },
+      {
+        name: "Rishikesh",
+        aliases: ["rishikesh", "hrishikesh"],
+        category: "Uttarakhand",
+        clues: [
+          "In 1968, the world's most famous rock band visited this small city to study Transcendental Meditation under a guru, and reportedly composed much of a legendary double album here.",
+          "Two suspension footbridges — one named after a saint and one after a sage — span a fast-flowing green river here, and crossing them is considered an act of spiritual merit by pilgrims.",
+          "This city is widely regarded as the global capital of yoga, hosting an international yoga festival every February that draws practitioners from over 100 countries.",
+          "Nestled in the foothills of the Himalayas in Uttarakhand, it sits where the Ganges descends from the mountains onto the plains — the last flat-water stretch before the river enters the plains, and the starting point for whitewater rafting expeditions."
+        ]
+      },
+      {
+        name: "Agra",
+        aliases: ["agra"],
+        category: "Uttar Pradesh",
+        clues: [
+          "This city served as the capital of the Mughal Empire during three separate reigns — under Akbar, Jahangir, and Shah Jahan — and was one of the most populous cities on Earth in the 17th century.",
+          "It is home to three UNESCO World Heritage Sites, more than almost any other city of its size in the world, all built within a century of each other.",
+          "A red sandstone fort here, begun by Emperor Akbar in 1565, contains over 500 buildings described in chronicles as a 'city within a city' — and was where Shah Jahan spent the final eight years of his life imprisoned by his own son.",
+          "Located on the banks of the Yamuna river in Uttar Pradesh, it draws millions of visitors annually who come primarily to see one monument in its entirety — a white marble mausoleum regarded as the finest example of Mughal architecture ever built."
+        ]
+      }
+    ];
+
+    // ─────────────────────────────────────────────
+    // HELPERS
+    // ─────────────────────────────────────────────
+    const POINTS = [100, 70, 40, 20];
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function normalize(str) {
+      return str.toLowerCase().trim().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ');
+    }
+
+    // ─────────────────────────────────────────────
+    // STATE
+    // ─────────────────────────────────────────────
+    let state = {
+      cities: [],
+      current: 0,
+      clueIndex: 0,
+      score: 0,
+      lives: 3,
+      wrongThisRound: 0,
+    };
+
+    // ─────────────────────────────────────────────
+    // GAME FLOW
+    // ─────────────────────────────────────────────
+    function startGame() {
+      state.cities  = shuffle(cities);
+      state.current = 0;
+      state.score   = 0;
+      document.getElementById('welcomeScreen').classList.remove('active');
+      loadCity();
+    }
+
+    function restartGame() {
+      document.getElementById('endScreen').classList.remove('active');
+      document.getElementById('gameOverScreen').classList.remove('active');
+      startGame();
+    }
+
+    function showGameOver() {
+      const c = state.cities[state.current];
+      document.getElementById('gameOverScore').textContent = state.score;
+      document.getElementById('gameOverMsg').textContent =
+        `You ran out of lives on "${c.name}". Better luck next time!`;
+      document.getElementById('gameOverScreen').classList.add('active');
+    }
+
+    function loadCity() {
+      const c = state.cities[state.current];
+      state.clueIndex      = 0;
+      state.wrongThisRound = 0;
+      state.lives          = 3;
+
+      renderClues();
+      updateHintBtn();
+      updateStats();
+
+      const input = document.getElementById('answerInput');
+      input.value    = '';
+      input.disabled = false;
+      setFeedback('', '');
+      input.focus();
+    }
+
+    function nextCity() {
+      state.current++;
+      if (state.current >= state.cities.length) {
+        showEnd();
+        return;
+      }
+      loadCity();
+    }
+
+    // ─────────────────────────────────────────────
+    // CLUES
+    // ─────────────────────────────────────────────
+    function renderClues() {
+      const c    = state.cities[state.current];
+      const list = document.getElementById('cluesList');
+      list.innerHTML = '';
+      c.clues.forEach((clue, i) => {
+        const li = document.createElement('li');
+        if (i <= state.clueIndex) {
+          li.textContent = `${i + 1}. ${clue}`;
+        } else {
+          li.textContent = `Clue ${i + 1} — locked`;
+          li.classList.add('locked');
+        }
+        list.appendChild(li);
+      });
+      document.getElementById('clueCounter').textContent =
+        `Clue ${state.clueIndex + 1} of ${c.clues.length}`;
+    }
+
+    function revealNextClue() {
+      const c = state.cities[state.current];
+      if (state.clueIndex >= c.clues.length - 1) return;
+      state.clueIndex++;
+      state.score = Math.max(0, state.score - 10);
+      renderClues();
+      updateHintBtn();
+      updateStats();
+      setFeedback('Clue unlocked! (−10 pts)', 'hint');
+    }
+
+    function updateHintBtn() {
+      const c   = state.cities[state.current];
+      const btn = document.getElementById('hintBtn');
+      const all = state.clueIndex >= c.clues.length - 1;
+      btn.disabled    = all;
+      btn.textContent = all ? '💡 All clues revealed' : '💡 Reveal Next Clue (−10 pts)';
+    }
+
+    // ─────────────────────────────────────────────
+    // ANSWER CHECK — strict exact match
+    // ─────────────────────────────────────────────
+    function checkAnswer() {
+      const input  = document.getElementById('answerInput');
+      const answer = normalize(input.value);
+      if (!answer) return;
+
+      const c       = state.cities[state.current];
+      const correct = c.aliases.some(a => normalize(a) === answer);
+
+      if (correct) {
+        const pts = POINTS[Math.min(state.clueIndex, POINTS.length - 1)];
+        state.score += pts;
+        updateStats();
+        setFeedback(`✅ Correct! +${pts} points — it's ${c.name}!`, 'correct');
+        input.disabled = true;
+        setTimeout(nextCity, 1800);
+      } else {
+        state.lives--;
+        state.wrongThisRound++;
+        updateStats();
+
+        if (state.lives === 0) {
+          setFeedback(`💀 Out of lives! The answer was: ${c.name}`, 'reveal');
+          input.disabled = true;
+          setTimeout(showGameOver, 1400);
+        } else {
+          setFeedback(
+            `❌ Wrong! ${state.lives} ${state.lives === 1 ? 'life' : 'lives'} left. Try again.`,
+            'wrong'
+          );
+          input.value = '';
+
+          // Auto-unlock next clue after 2 consecutive wrong guesses
+          if (state.wrongThisRound >= 2 && state.clueIndex < c.clues.length - 1) {
+            state.clueIndex++;
+            state.wrongThisRound = 0;
+            renderClues();
+            updateHintBtn();
+          }
+        }
+      }
+    }
+
+    // ─────────────────────────────────────────────
+    // END SCREEN
+    // ─────────────────────────────────────────────
+    function showEnd() {
+      const max = POINTS[0] * cities.length;
+      const pct = Math.round((state.score / max) * 100);
+
+      const ranks = [
+        { min: 85, emoji: '🏆', title: 'India Expert!',      msg: 'Incredible! You know India inside out.' },
+        { min: 65, emoji: '🗺️', title: 'Well Travelled!',    msg: 'Great knowledge! A few cities stumped you, but most didn\'t.' },
+        { min: 40, emoji: '🧭', title: 'Budding Explorer!',  msg: 'A decent start! Keep exploring the map of India.' },
+        { min: 0,  emoji: '🌱', title: 'Learning the Map!',  msg: 'Every journey begins somewhere. Try again and improve!' },
+      ];
+
+      const rank = ranks.find(r => pct >= r.min);
+      document.getElementById('rankEmoji').textContent  = rank.emoji;
+      document.getElementById('endTitle').textContent   = rank.title;
+      document.getElementById('finalScore').textContent = state.score;
+      document.getElementById('endMessage').textContent =
+        `${rank.msg}\n\nYou scored ${state.score} out of a possible ${max} points (${pct}%).`;
+
+      document.getElementById('endScreen').classList.add('active');
+    }
+
+    // ─────────────────────────────────────────────
+    // UI HELPERS
+    // ─────────────────────────────────────────────
+    function updateStats() {
+      document.getElementById('scoreDisplay').textContent = state.score;
+      document.getElementById('livesDisplay').textContent =
+        '❤️'.repeat(state.lives) + '🖤'.repeat(3 - state.lives);
+      const total = state.cities.length;
+      document.getElementById('qNumDisplay').textContent = `${state.current + 1} / ${total}`;
+      const pct = Math.round((state.current / total) * 100);
+      document.getElementById('progressFill').style.width = pct + '%';
+      document.getElementById('progressLabel').textContent = pct + '%';
+    }
+
+    function setFeedback(msg, type) {
+      const el    = document.getElementById('feedback');
+      el.textContent = msg;
+      el.className   = 'feedback ' + type;
+    }
+
+    // ─────────────────────────────────────────────
+    // AUTH
+    // ─────────────────────────────────────────────
+    let authMode = 'login';
+
+    function switchTab(mode) {
+      authMode = mode;
+      document.getElementById('tabLogin').classList.toggle('active',  mode === 'login');
+      document.getElementById('tabSignup').classList.toggle('active', mode === 'signup');
+      document.getElementById('authError').textContent = '';
+    }
+
+    async function submitAuth() {
+      const username = document.getElementById('authUsername').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const errEl    = document.getElementById('authError');
+      errEl.textContent = '';
+
+      if (!username || !password) {
+        errEl.textContent = 'Please enter username and password.';
+        return;
+      }
+
+      const endpoint = authMode === 'login' ? '/api/login' : '/api/signup';
+      try {
+        const res  = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          errEl.textContent = data.error || 'Something went wrong.';
+          return;
+        }
+        document.getElementById('authScreen').classList.remove('active');
+        document.getElementById('navUsername').textContent = data.username;
+        document.getElementById('welcomeScreen').classList.add('active');
+      } catch (e) {
+        errEl.textContent = 'Server error. Is Flask running?';
+      }
+    }
+
+    async function doLogout() {
+      await fetch('/api/logout', { method: 'POST' });
+      location.reload();
+    }
+
+    // ─────────────────────────────────────────────
+    // SCORES
+    // ─────────────────────────────────────────────
+    async function saveScore(score, maxPossible, gameMode) {
+      try {
+        await fetch('/api/score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ score, max_possible: maxPossible, game_mode: gameMode })
+        });
+      } catch (_) {}
+    }
+
+    async function loadScoreHistory(targetId) {
+      const el = document.getElementById(targetId);
+      if (!el) return;
+      try {
+        const res  = await fetch('/api/scores');
+        const data = await res.json();
+        if (!data.scores || data.scores.length === 0) {
+          el.innerHTML = '';
+          return;
+        }
+        const rows = data.scores.map(s => {
+          const pct    = Math.round((s.score / s.max_possible) * 100);
+          const badge  = s.game_mode === 'completed'
+            ? '<span class="badge-completed">✔ Completed</span>'
+            : '<span class="badge-game-over">✘ Game Over</span>';
+          return `<tr>
+            <td>${s.score}</td>
+            <td>${pct}%</td>
+            <td>${badge}</td>
+            <td style="color:#666;font-size:0.75rem">${s.played_at}</td>
+          </tr>`;
+        }).join('');
+
+        el.innerHTML = `
+          <div class="history-wrap">
+            <div class="history-title">📊 Your Last ${data.scores.length} Games &nbsp;·&nbsp; Best: ${data.best_score}</div>
+            <table class="history-table">
+              <thead><tr>
+                <th>Score</th><th>%</th><th>Result</th><th>Date</th>
+              </tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>`;
+      } catch (_) {}
+    }
+
+    // ─────────────────────────────────────────────
+    // HOOK INTO showEnd / showGameOver
+    // ─────────────────────────────────────────────
+    const _origShowEnd = showEnd;
+    showEnd = function() {
+      _origShowEnd();
+      const max = POINTS[0] * cities.length;
+      saveScore(state.score, max, 'completed').then(() => loadScoreHistory('endHistory'));
+    };
+
+    const _origShowGameOver = showGameOver;
+    showGameOver = function() {
+      _origShowGameOver();
+      const max = POINTS[0] * cities.length;
+      saveScore(state.score, max, 'game_over').then(() => loadScoreHistory('gameOverHistory'));
+    };
+
+    // ─────────────────────────────────────────────
+    // ON LOAD — check session
+    // ─────────────────────────────────────────────
+    (async function checkAuth() {
+      try {
+        const res  = await fetch('/api/me');
+        const data = await res.json();
+        if (data.loggedIn) {
+          document.getElementById('authScreen').classList.remove('active');
+          document.getElementById('navUsername').textContent = data.username;
+          document.getElementById('welcomeScreen').classList.add('active');
+        }
+      } catch (_) {}
+    })();
+  </script>
+</body>
+</html>

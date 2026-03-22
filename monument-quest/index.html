@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Monument Quest 🏛️</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      padding: 20px;
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .header h1 {
+      font-size: 2.6rem;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, #f7971e, #ffd200);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: none;
+    }
+    .header p {
+      color: #aaa;
+      margin-top: 6px;
+      font-size: 0.95rem;
+    }
+
+    /* ── Stats Bar ── */
+    .stats {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .stat-box {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 12px;
+      padding: 10px 20px;
+      text-align: center;
+      min-width: 90px;
+    }
+    .stat-box .label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+    .stat-box .value { font-size: 1.5rem; font-weight: 700; color: #ffd200; }
+
+    /* ── Game Card ── */
+    .card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      padding: 32px;
+      width: 100%;
+      max-width: 680px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    /* ── Progress ── */
+    .progress-wrap {
+      margin-bottom: 20px;
+    }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: #aaa;
+      margin-bottom: 6px;
+    }
+    .progress-bar {
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f7971e, #ffd200);
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+
+    /* ── Clue Section ── */
+    .clue-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .clue-title {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #f7971e;
+      font-weight: 600;
+    }
+    .clue-counter {
+      font-size: 0.75rem;
+      color: #aaa;
+    }
+
+    .clues-list { list-style: none; margin-bottom: 18px; }
+    .clues-list li {
+      background: rgba(255,255,255,0.05);
+      border-left: 3px solid #f7971e;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      font-size: 1rem;
+      line-height: 1.5;
+      animation: fadeIn 0.4s ease;
+    }
+    .clues-list li.locked {
+      border-left-color: rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.25);
+      cursor: default;
+      font-style: italic;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Hint Button ── */
+    .hint-btn {
+      background: transparent;
+      border: 1px solid rgba(247,151,30,0.5);
+      color: #f7971e;
+      padding: 7px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      transition: all 0.2s;
+      margin-bottom: 20px;
+    }
+    .hint-btn:hover:not(:disabled) { background: rgba(247,151,30,0.15); }
+    .hint-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* ── Input ── */
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+    #answerInput {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+      transition: border 0.2s;
+    }
+    #answerInput::placeholder { color: rgba(255,255,255,0.35); }
+    #answerInput:focus { border-color: #ffd200; }
+
+    .submit-btn {
+      padding: 12px 22px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #f7971e, #ffd200);
+      color: #1a1a2e;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+    .submit-btn:hover { transform: scale(1.04); }
+    .submit-btn:active { transform: scale(0.97); }
+
+    /* ── Feedback ── */
+    .feedback {
+      margin-top: 14px;
+      min-height: 28px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      text-align: center;
+      transition: all 0.3s;
+    }
+    .feedback.correct { color: #4ade80; }
+    .feedback.wrong   { color: #f87171; }
+    .feedback.reveal  { color: #facc15; }
+
+    /* ── Lives ── */
+    .lives { font-size: 1.4rem; letter-spacing: 4px; }
+
+    /* ── Overlay Screens ── */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(6px);
+    }
+    .overlay.active { display: flex; }
+
+    .overlay-box {
+      background: linear-gradient(135deg, #1a1a2e, #302b63);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 24px;
+      padding: 48px 40px;
+      text-align: center;
+      max-width: 420px;
+      width: 90%;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+      animation: popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+    }
+    @keyframes popIn {
+      from { transform: scale(0.7); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .overlay-box h2 { font-size: 2rem; margin-bottom: 10px; }
+    .overlay-box p  { color: #aaa; margin-bottom: 24px; line-height: 1.6; }
+    .overlay-box .big-score {
+      font-size: 3.5rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #f7971e, #ffd200);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .play-btn {
+      padding: 14px 36px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #f7971e, #ffd200);
+      color: #1a1a2e;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .play-btn:hover { transform: scale(1.05); }
+
+    /* ── Category Badge ── */
+    .category-badge {
+      display: inline-block;
+      background: rgba(247,151,30,0.15);
+      border: 1px solid rgba(247,151,30,0.4);
+      color: #f7971e;
+      font-size: 0.72rem;
+      padding: 3px 10px;
+      border-radius: 99px;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      .header h1 { font-size: 1.8rem; }
+      .card { padding: 22px 18px; }
+      .input-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Welcome Screen -->
+  <div class="overlay active" id="welcomeScreen">
+    <div class="overlay-box">
+      <h2>🏛️ Monument Quest</h2>
+      <p>Clues describe a famous world heritage site or monument — <strong>without revealing its name</strong>.<br><br>
+         Unlock clues one by one. The sooner you guess, the more points you earn!<br><br>
+         ❤️ You have <strong>3 lives</strong> per monument. Use them wisely.
+      </p>
+      <button class="play-btn" onclick="startGame()">Start Exploring →</button>
+    </div>
+  </div>
+
+  <!-- End Screen -->
+  <div class="overlay" id="endScreen">
+    <div class="overlay-box">
+      <h2 id="endTitle">Quest Complete!</h2>
+      <div class="big-score" id="finalScore">0</div>
+      <p id="endMessage"></p>
+      <button class="play-btn" onclick="restartGame()">Play Again 🔁</button>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <h1>🏛️ Monument Quest</h1>
+    <p>Decode the clues. Name the monument.</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-box">
+      <div class="label">Score</div>
+      <div class="value" id="scoreDisplay">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="label">Lives</div>
+      <div class="value lives" id="livesDisplay">❤️❤️❤️</div>
+    </div>
+    <div class="stat-box">
+      <div class="label">Monument</div>
+      <div class="value" id="qNumDisplay">1 / 20</div>
+    </div>
+  </div>
+
+  <!-- Game Card -->
+  <div class="card">
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>Progress</span>
+        <span id="progressLabel">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <span class="category-badge" id="categoryBadge">Ancient Wonder</span>
+
+    <div class="clue-header">
+      <span class="clue-title">🔍 Clues</span>
+      <span class="clue-counter" id="clueCounter">Clue 1 of 4</span>
+    </div>
+
+    <ul class="clues-list" id="cluesList"></ul>
+
+    <button class="hint-btn" id="hintBtn" onclick="revealNextClue()">
+      💡 Reveal Next Clue <span id="hintCost">(−10 pts)</span>
+    </button>
+
+    <div class="input-row">
+      <input
+        type="text"
+        id="answerInput"
+        placeholder="Type the monument name…"
+        autocomplete="off"
+        onkeydown="if(event.key==='Enter') checkAnswer()"
+      />
+      <button class="submit-btn" onclick="checkAnswer()">Guess →</button>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <script>
+    // ─────────────────────────────────────────────
+    // DATA — 20 monuments with 4 progressive clues
+    // ─────────────────────────────────────────────
+    const monuments = [
+      {
+        name: "Eiffel Tower",
+        aliases: ["eiffel", "eiffel tower"],
+        category: "European Icon",
+        clues: [
+          "Built between 1887 and 1889, this iron lattice giant was once the tallest man-made structure on Earth.",
+          "It stands in a major European capital renowned for fashion, cuisine, and romance.",
+          "The structure was originally intended to be a temporary exhibit for a World's Fair and was almost demolished.",
+          "Every night, 20,000 light bulbs make this tower sparkle for five minutes every hour after dark."
+        ]
+      },
+      {
+        name: "Taj Mahal",
+        aliases: ["taj mahal", "taj"],
+        category: "Mughal Masterpiece",
+        clues: [
+          "A Mughal emperor ordered its construction in the 17th century as an eternal tribute to his beloved wife who died during childbirth.",
+          "Over 20,000 artisans and craftsmen from across Asia and Persia worked for more than two decades to complete it.",
+          "Its white marble exterior subtly changes color throughout the day — pinkish at dawn, milky white at noon, and golden at sunset.",
+          "Located on the banks of the Yamuna river, it is the centrepiece of a UNESCO World Heritage Site in Agra, India."
+        ]
+      },
+      {
+        name: "Great Wall of China",
+        aliases: ["great wall", "great wall of china"],
+        category: "Ancient Fortification",
+        clues: [
+          "Multiple Chinese dynasties built and expanded this massive defensive structure over roughly 2,000 years.",
+          "It stretches across mountains, deserts, and grasslands — totalling more than 21,000 kilometres if all sections are counted.",
+          "Contrary to a popular myth, it cannot be seen from space with the naked eye.",
+          "Millions of soldiers, peasants, and prisoners contributed to its construction, many of whom are said to be buried within its walls."
+        ]
+      },
+      {
+        name: "Colosseum",
+        aliases: ["colosseum", "coliseum"],
+        category: "Ancient Wonder",
+        clues: [
+          "Completed in 80 AD, this elliptical amphitheatre could hold up to 80,000 spectators.",
+          "It hosted gladiatorial contests, animal hunts, public executions, and mock sea battles filled with water.",
+          "An earthquake in 1349 caused its southern side to collapse; the fallen stones were later used to build palaces and churches.",
+          "It stands in the heart of the Italian capital and is one of the most visited tourist attractions on the planet."
+        ]
+      },
+      {
+        name: "Machu Picchu",
+        aliases: ["machu picchu", "machu"],
+        category: "Incan Citadel",
+        clues: [
+          "Built in the 15th century by the Inca emperor Pachacuti, this city sits at an altitude of nearly 2,430 metres.",
+          "The site was largely unknown to the outside world until 1911, when historian Hiram Bingham brought it to international attention.",
+          "Its sophisticated dry-stone walls fit together so precisely that not even a knife blade can slide between them.",
+          "Nestled in the Andes mountains of South America, it overlooks a sacred river valley in modern-day Peru."
+        ]
+      },
+      {
+        name: "Stonehenge",
+        aliases: ["stonehenge"],
+        category: "Prehistoric Monument",
+        clues: [
+          "Constructed in phases between 3000 and 1500 BC, this prehistoric ring of standing stones remains one of archaeology's greatest mysteries.",
+          "The largest stones, called sarsens, weigh up to 25 tonnes and were transported from a quarry 25 miles away — with no wheel technology.",
+          "The structure is precisely aligned with the sunrise on the summer solstice, suggesting it served as an ancient astronomical calendar.",
+          "It stands on a windswept plain in Wiltshire, England, and is managed by English Heritage."
+        ]
+      },
+      {
+        name: "Pyramids of Giza",
+        aliases: ["pyramids of giza", "great pyramid", "giza", "pyramids"],
+        category: "Ancient Wonder",
+        clues: [
+          "The oldest and only surviving structure among the Seven Wonders of the Ancient World, it has stood for over 4,500 years.",
+          "Approximately 2.3 million stone blocks, each weighing 2.5 to 15 tonnes, were used in its construction.",
+          "For nearly 4,000 years it held the record as the tallest man-made structure in the world.",
+          "Located on the Giza Plateau outside Cairo, Egypt, it was built as a royal tomb for Pharaoh Khufu."
+        ]
+      },
+      {
+        name: "Statue of Liberty",
+        aliases: ["statue of liberty", "liberty"],
+        category: "American Symbol",
+        clues: [
+          "Designed by French sculptor Frédéric Auguste Bartholdi, it was a gift from France to the United States.",
+          "Its copper skin has oxidized over time, giving it a distinctive blue-green color that was not part of the original design.",
+          "The seven rays on her crown represent the seven seas and seven continents of the world.",
+          "Standing on Liberty Island in New York Harbor, she has greeted millions of immigrants arriving by sea since 1886."
+        ]
+      },
+      {
+        name: "Angkor Wat",
+        aliases: ["angkor wat", "angkor"],
+        category: "Temple Complex",
+        clues: [
+          "Built in the early 12th century by Khmer King Suryavarman II, it is the largest religious monument ever constructed.",
+          "Originally dedicated to the Hindu god Vishnu, it gradually transformed into a Buddhist temple.",
+          "Its towers are designed to represent Mount Meru, the sacred five-peaked mountain in Hindu and Buddhist cosmology.",
+          "It appears on the national flag of its country — Cambodia — and the complex spans over 400 acres in the Siem Reap province."
+        ]
+      },
+      {
+        name: "Chichen Itza",
+        aliases: ["chichen itza", "chichen"],
+        category: "Maya Wonder",
+        clues: [
+          "This ancient Mesoamerican city was one of the largest Maya cities and a major focal point in the northern Maya lowlands.",
+          "During the spring and autumn equinoxes, the setting sun casts a shadow that resembles a serpent slithering down the main pyramid.",
+          "The central pyramid has exactly 365 steps — one for each day of the solar year.",
+          "Located in the Yucatán Peninsula of Mexico, it was named a New Seven Wonder of the World in 2007."
+        ]
+      },
+      {
+        name: "Sydney Opera House",
+        aliases: ["sydney opera house", "opera house"],
+        category: "Modern Marvel",
+        clues: [
+          "Danish architect Jørn Utzon won an international design competition in 1957 with a radical sail-like concept that engineers initially said was impossible to build.",
+          "Its distinctive roof consists of over one million ceramic tiles arranged in glossy white and matte cream patterns.",
+          "It took 14 years and cost 14 times the original budget to complete, opening in 1973.",
+          "Perched on Bennelong Point on a harbour in Australia's largest city, it hosts over 1,500 performances each year."
+        ]
+      },
+      {
+        name: "Acropolis",
+        aliases: ["acropolis", "parthenon"],
+        category: "Greek Heritage",
+        clues: [
+          "Perched on a limestone hill 150 metres above a European capital, this ancient citadel contains the remains of several historically significant buildings.",
+          "Its most famous structure was built between 447 and 438 BC and dedicated to the goddess of wisdom and warfare.",
+          "The site once housed the treasury of a powerful ancient alliance of city-states.",
+          "Located in Athens, Greece, its marble sculptures have been the subject of an ongoing international ownership dispute between Greece and the British Museum."
+        ]
+      },
+      {
+        name: "Christ the Redeemer",
+        aliases: ["christ the redeemer", "christ redeemer", "redeemer"],
+        category: "South American Icon",
+        clues: [
+          "Standing 30 metres tall with arms stretching 28 metres wide, this concrete and soapstone statue towers over a bustling South American city.",
+          "It took nine years to build and was finally inaugurated in 1931, designed by sculptor Paul Landowski.",
+          "It stands atop Corcovado mountain, offering a panoramic view of an iconic bay, white-sand beaches, and a famous carnival city.",
+          "It is the largest Art Deco statue in the world and one of the New Seven Wonders of the World, located in Rio de Janeiro, Brazil."
+        ]
+      },
+      {
+        name: "Petra",
+        aliases: ["petra", "rose city"],
+        category: "Ancient City",
+        clues: [
+          "Carved directly into rose-red sandstone cliffs, this ancient city was the capital of the Nabataean Kingdom around 400 BC.",
+          "It was largely unknown to the Western world until Swiss explorer Johann Ludwig Burckhardt rediscovered it in 1812.",
+          "The most iconic structure, known as 'The Treasury,' was actually a royal tomb — not a storehouse for valuables.",
+          "Located in the southern desert of Jordan, it earned the nickname 'The Rose City' from the color of its stone."
+        ]
+      },
+      {
+        name: "Sagrada Familia",
+        aliases: ["sagrada familia", "sagrada"],
+        category: "Architectural Phenomenon",
+        clues: [
+          "Construction of this Roman Catholic basilica began in 1882 and is still ongoing — making it one of the longest-running construction projects in history.",
+          "Its original architect, Antoni Gaudí, is buried in its crypt. He devoted the last 43 years of his life to the project.",
+          "The building blends Gothic and Art Nouveau styles, featuring 18 planned towers representing the apostles, evangelists, Virgin Mary, and Jesus Christ.",
+          "Located in Barcelona, Spain, it receives over 4 million visitors annually despite being unfinished."
+        ]
+      },
+      {
+        name: "Leaning Tower of Pisa",
+        aliases: ["leaning tower of pisa", "leaning tower", "tower of pisa", "pisa"],
+        category: "Italian Landmark",
+        clues: [
+          "Construction of this freestanding bell tower began in 1173 but took nearly 200 years to complete due to wars, debt, and — ironically — the lean that would make it famous.",
+          "The tilt began during construction because the soil on one side was too soft to support the structure's weight.",
+          "Engineers in the 1990s removed soil from the higher side to reduce the tilt from 5.5 degrees to a safer 3.97 degrees.",
+          "Located in the Piazza dei Miracoli in Tuscany, Italy, it was reportedly used by Galileo to demonstrate the laws of gravity."
+        ]
+      },
+      {
+        name: "Mount Rushmore",
+        aliases: ["mount rushmore", "rushmore"],
+        category: "American Monument",
+        clues: [
+          "Sculptor Gutzon Borglum and his son Lincoln led 400 workers who blasted and carved this granite mountainside using dynamite between 1927 and 1941.",
+          "It features the faces of four American presidents, each roughly 18 metres tall.",
+          "The four leaders depicted were chosen to represent the birth, growth, development, and preservation of the United States.",
+          "Located in the Black Hills of South Dakota, USA, it was carved into land considered sacred by the Lakota Sioux people."
+        ]
+      },
+      {
+        name: "Alhambra",
+        aliases: ["alhambra"],
+        category: "Moorish Palace",
+        clues: [
+          "This sprawling palace and fortress complex was built primarily during the 13th and 14th centuries by the Nasrid dynasty.",
+          "Its name derives from an Arabic phrase meaning 'The Red One,' likely referring to the color of the sun-dried clay used in its construction.",
+          "The interior is renowned for its intricate geometric tile work, carved plasterwork, and wooden ceilings with thousands of tiny stalactite-like cells.",
+          "Perched on a hilltop overlooking the city of Granada in southern Spain, it became a UNESCO World Heritage Site in 1984."
+        ]
+      },
+      {
+        name: "Burj Khalifa",
+        aliases: ["burj khalifa", "burj"],
+        category: "Modern Wonder",
+        clues: [
+          "At 828 metres, this steel-and-glass supertall skyscraper holds the record as the tallest building and tallest free-standing structure in the world.",
+          "It has the highest observation deck, highest restaurant, and highest nightclub ever built in a tower.",
+          "Its design was inspired by the Hymenocallis flower, with a central core and three wings arranged in a Y shape.",
+          "It stands in the downtown district of Dubai, UAE, and was inaugurated in January 2010 — named after the president of the UAE."
+        ]
+      },
+      {
+        name: "Big Ben",
+        aliases: ["big ben", "elizabeth tower"],
+        category: "British Icon",
+        clues: [
+          "Technically, the famous name refers only to the massive bell inside the tower — not the tower itself, which was renamed the Elizabeth Tower in 2012.",
+          "The bell weighs over 13 tonnes and has a small crack that gives it its distinctive tone.",
+          "The clock's four dials are each 7 metres wide, and the minute hands alone are 4.3 metres long.",
+          "It rises above the Palace of Westminster in London, UK, and has kept time reliably since its first chime in 1859."
+        ]
+      }
+    ];
+
+    // ─────────────────────────────────────────────
+    // STATE
+    // ─────────────────────────────────────────────
+    let state = {
+      monuments: [],
+      current: 0,
+      clueIndex: 0,
+      score: 0,
+      lives: 3,
+      wrongThisRound: 0,
+    };
+
+    // Shuffle helper
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    // Points per clue position
+    const POINTS = [100, 70, 40, 20];
+
+    // ─────────────────────────────────────────────
+    // INIT
+    // ─────────────────────────────────────────────
+    function startGame() {
+      state.monuments = shuffle(monuments);
+      state.current   = 0;
+      state.score     = 0;
+      state.lives     = 3;
+      document.getElementById('welcomeScreen').classList.remove('active');
+      loadMonument();
+    }
+
+    function restartGame() {
+      document.getElementById('endScreen').classList.remove('active');
+      startGame();
+    }
+
+    // ─────────────────────────────────────────────
+    // LOAD A MONUMENT
+    // ─────────────────────────────────────────────
+    function loadMonument() {
+      const m = state.monuments[state.current];
+      state.clueIndex      = 0;
+      state.wrongThisRound = 0;
+      state.lives          = 3;
+
+      // Update stats
+      updateStats();
+
+      // Category badge
+      document.getElementById('categoryBadge').textContent = m.category;
+
+      // Render clue slots (only first unlocked)
+      renderClues();
+
+      // Reset hint btn
+      updateHintBtn();
+
+      // Clear input & feedback
+      document.getElementById('answerInput').value = '';
+      document.getElementById('answerInput').disabled = false;
+      setFeedback('', '');
+      document.getElementById('answerInput').focus();
+    }
+
+    // ─────────────────────────────────────────────
+    // RENDER CLUES
+    // ─────────────────────────────────────────────
+    function renderClues() {
+      const m    = state.monuments[state.current];
+      const list = document.getElementById('cluesList');
+      list.innerHTML = '';
+
+      m.clues.forEach((clue, i) => {
+        const li = document.createElement('li');
+        if (i <= state.clueIndex) {
+          li.textContent = `${i + 1}. ${clue}`;
+        } else {
+          li.textContent = `Clue ${i + 1} — locked`;
+          li.classList.add('locked');
+        }
+        list.appendChild(li);
+      });
+
+      document.getElementById('clueCounter').textContent =
+        `Clue ${state.clueIndex + 1} of ${m.clues.length}`;
+    }
+
+    // ─────────────────────────────────────────────
+    // REVEAL NEXT CLUE
+    // ─────────────────────────────────────────────
+    function revealNextClue() {
+      const m = state.monuments[state.current];
+      if (state.clueIndex >= m.clues.length - 1) return;
+      state.clueIndex++;
+      state.score = Math.max(0, state.score - 10);
+      renderClues();
+      updateStats();
+      updateHintBtn();
+      setFeedback('Clue unlocked! (−10 pts)', '');
+    }
+
+    function updateHintBtn() {
+      const m   = state.monuments[state.current];
+      const btn = document.getElementById('hintBtn');
+      const all = state.clueIndex >= m.clues.length - 1;
+      btn.disabled = all;
+      btn.textContent = all
+        ? '💡 All clues revealed'
+        : `💡 Reveal Next Clue (−10 pts)`;
+    }
+
+    // ─────────────────────────────────────────────
+    // CHECK ANSWER
+    // ─────────────────────────────────────────────
+    function checkAnswer() {
+      const raw     = document.getElementById('answerInput').value.trim();
+      const answer  = raw.toLowerCase().replace(/[^a-z0-9 ]/g, '');
+      const m       = state.monuments[state.current];
+      const correct = m.aliases.some(a => answer === a || answer === a.replace(/[^a-z0-9 ]/g, ''));
+
+      if (!answer) return;
+
+      if (correct) {
+        const pts = POINTS[Math.min(state.clueIndex, POINTS.length - 1)];
+        state.score += pts;
+        setFeedback(`✅ Correct! +${pts} points — "${m.name}"`, 'correct');
+        document.getElementById('answerInput').disabled = true;
+        updateStats();
+        setTimeout(nextMonument, 1800);
+      } else {
+        state.wrongThisRound++;
+        state.lives = Math.max(0, state.lives - 1);
+        updateStats();
+
+        if (state.lives === 0) {
+          setFeedback(`💀 No lives left! The answer was: "${m.name}"`, 'reveal');
+          document.getElementById('answerInput').disabled = true;
+          setTimeout(nextMonument, 2500);
+        } else {
+          setFeedback(`❌ Not quite! ${state.lives} ${state.lives === 1 ? 'life' : 'lives'} remaining. Try again.`, 'wrong');
+          document.getElementById('answerInput').value = '';
+
+          // Auto-reveal a clue after 2 wrong guesses in a row
+          if (state.wrongThisRound >= 2 && state.clueIndex < m.clues.length - 1) {
+            state.clueIndex++;
+            renderClues();
+            updateHintBtn();
+          }
+        }
+      }
+    }
+
+    // ─────────────────────────────────────────────
+    // NEXT MONUMENT
+    // ─────────────────────────────────────────────
+    function nextMonument() {
+      state.current++;
+      if (state.current >= state.monuments.length) {
+        showEnd();
+        return;
+      }
+      loadMonument();
+    }
+
+    // ─────────────────────────────────────────────
+    // END SCREEN
+    // ─────────────────────────────────────────────
+    function showEnd() {
+      const max = POINTS[0] * monuments.length;
+      const pct = Math.round((state.score / max) * 100);
+
+      document.getElementById('finalScore').textContent = state.score;
+      document.getElementById('endTitle').textContent =
+        pct >= 80 ? '🏆 Master Explorer!' :
+        pct >= 50 ? '🌍 World Traveler!'  :
+                    '🗺️ Quest Complete!';
+      document.getElementById('endMessage').textContent =
+        `You scored ${state.score} out of a possible ${max} points (${pct}%).\n` +
+        (pct >= 80 ? 'Incredible! You know your world heritage!' :
+         pct >= 50 ? 'Great effort! Keep exploring the world.' :
+                     'Every legend starts somewhere. Try again!');
+
+      document.getElementById('endScreen').classList.add('active');
+    }
+
+    // ─────────────────────────────────────────────
+    // HELPERS
+    // ─────────────────────────────────────────────
+    function updateStats() {
+      document.getElementById('scoreDisplay').textContent = state.score;
+      document.getElementById('livesDisplay').textContent =
+        '❤️'.repeat(state.lives) + '🖤'.repeat(3 - state.lives);
+      const total = state.monuments.length;
+      document.getElementById('qNumDisplay').textContent =
+        `${state.current + 1} / ${total}`;
+
+      const pct = Math.round((state.current / total) * 100);
+      document.getElementById('progressFill').style.width = pct + '%';
+      document.getElementById('progressLabel').textContent = pct + '%';
+    }
+
+    function setFeedback(msg, type) {
+      const el = document.getElementById('feedback');
+      el.textContent = msg;
+      el.className   = 'feedback ' + type;
+    }
+  </script>
+</body>
+</html>
